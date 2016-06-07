@@ -1,0 +1,1303 @@
+Microsoft (R) Macro Assembler Version 14.00.23506.0	    06/03/16 20:57:18
+Main.asm						     Page 1 - 1
+
+
+				; Nick George
+				; October 2nd, 2015
+				; Final Project (Maze Game)
+
+
+				INCLUDE Irvine32.inc
+			      C ; Include file for Irvine32.lib             (Irvine32.inc)
+			      C 
+			      C ;OPTION CASEMAP:NONE		; optional: make identifiers case-sensitive
+			      C 
+			      C INCLUDE SmallWin.inc		; MS-Windows prototypes, structures, and constants
+			      C .NOLIST
+			      C .LIST
+			      C 
+			      C INCLUDE VirtualKeys.inc
+			      C ; VirtualKeys.inc
+			      C .NOLIST
+			      C .LIST
+			      C 
+			      C 
+			      C .NOLIST
+			      C .LIST
+			      C 
+
+ 00000000			.data
+ 00000000 57 65 6C 63 6F	menuStrings BYTE "Welcome to the asm Maze Game",10,13,"1. Help/About",10,13,"2. Play",10,13,"3. Review your saved score",10,13,"4. Exit",10,13,0
+	   6D 65 20 74 6F
+	   20 74 68 65 20
+	   61 73 6D 20 4D
+	   61 7A 65 20 47
+	   61 6D 65 0A 0D
+	   31 2E 20 48 65
+	   6C 70 2F 41 62
+	   6F 75 74 0A 0D
+	   32 2E 20 50 6C
+	   61 79 0A 0D 33
+	   2E 20 52 65 76
+	   69 65 77 20 79
+	   6F 75 72 20 73
+	   61 76 65 64 20
+	   73 63 6F 72 65
+	   0A 0D 34 2E 20
+	   45 78 69 74 0A
+	   0D 00
+ 0000005C 40 20 3C 2D 20	helpString BYTE "@ <- YOU",10,13,"& <- Score Bonus",10,13,36," <- Bigger Score Bonus",10,13,"F <- The End of the Maze!",10,13,177," <- Impassible Wall :(",10,13,"Use the arrow keys to move around the maze",10,13,"Reach the end before the time runs out to win!",10,13,0
+	   59 4F 55 0A 0D
+	   26 20 3C 2D 20
+	   53 63 6F 72 65
+	   20 42 6F 6E 75
+	   73 0A 0D 24 20
+	   3C 2D 20 42 69
+	   67 67 65 72 20
+	   53 63 6F 72 65
+	   20 42 6F 6E 75
+	   73 0A 0D 46 20
+	   3C 2D 20 54 68
+	   65 20 45 6E 64
+	   20 6F 66 20 74
+	   68 65 20 4D 61
+	   7A 65 21 0A 0D
+	   B1 20 3C 2D 20
+	   49 6D 70 61 73
+	   73 69 62 6C 65
+	   20 57 61 6C 6C
+	   20 3A 28 0A 0D
+	   55 73 65 20 74
+	   68 65 20 61 72
+	   72 6F 77 20 6B
+	   65 79 73 20 74
+	   6F 20 6D 6F 76
+	   65 20 61 72 6F
+	   75 6E 64 20 74
+	   68 65 20 6D 61
+	   7A 65 0A 0D 52
+	   65 61 63 68 20
+	   74 68 65 20 65
+	   6E 64 20 62 65
+	   66 6F 72 65 20
+	   74 68 65 20 74
+	   69 6D 65 20 72
+	   75 6E 73 20 6F
+	   75 74 20 74 6F
+	   20 77 69 6E 21
+	   0A 0D 00
+ 00000122 59 6F 75 72 20	endgameString1 BYTE "Your Score is: ",0
+	   53 63 6F 72 65
+	   20 69 73 3A 20
+	   00
+ 00000132 31 2E 20 53 61	endgameString2 BYTE "1. Save to scores.txt and quit",10,13,"2. Quit without saving",0
+	   76 65 20 74 6F
+	   20 73 63 6F 72
+	   65 73 2E 74 78
+	   74 20 61 6E 64
+	   20 71 75 69 74
+	   0A 0D 32 2E 20
+	   51 75 69 74 20
+	   77 69 74 68 6F
+	   75 74 20 73 61
+	   76 69 6E 67 00
+ 00000169 54 69 6D 65 20	loseString BYTE "Time is up! Game Over!",10,13,0
+	   69 73 20 75 70
+	   21 20 47 61 6D
+	   65 20 4F 76 65
+	   72 21 0A 0D 00
+ 00000182 59 6F 75 20 57	winString BYTE "You Win! A bonus of 3x remaining time has been added to your score!",10,13,0
+	   69 6E 21 20 41
+	   20 62 6F 6E 75
+	   73 20 6F 66 20
+	   33 78 20 72 65
+	   6D 61 69 6E 69
+	   6E 67 20 74 69
+	   6D 65 20 68 61
+	   73 20 62 65 65
+	   6E 20 61 64 64
+	   65 64 20 74 6F
+	   20 79 6F 75 72
+	   20 73 63 6F 72
+	   65 21 0A 0D 00
+ 000001C8 53 63 6F 72 65	scoreString BYTE "Score:",0
+	   3A 00
+ 000001CF 54 69 6D 65 3A	timeString BYTE "Time:",0
+	   00
+ 000001D5 45 6E 74 65 72	askChoice BYTE "Enter your choice: ",0
+	   20 79 6F 75 72
+	   20 63 68 6F 69
+	   63 65 3A 20 00
+ 000001E9 45 6E 74 65 72	askName BYTE "Enter your name: ",0
+	   20 79 6F 75 72
+	   20 6E 61 6D 65
+	   3A 20 00
+ 000001FB 53 63 6F 72 65	scoreSaved BYTE "Score saved!",10,13,0
+	   20 73 61 76 65
+	   64 21 0A 0D 00
+ 0000020A 53 63 6F 72 65	failScoreString BYTE "Score file could not be opened. No score to display.",10,13,0
+	   20 66 69 6C 65
+	   20 63 6F 75 6C
+	   64 20 6E 6F 74
+	   20 62 65 20 6F
+	   70 65 6E 65 64
+	   2E 20 4E 6F 20
+	   73 63 6F 72 65
+	   20 74 6F 20 64
+	   69 73 70 6C 61
+	   79 2E 0A 0D 00
+
+				; the lovely hardcoded maze layout
+				; 20x21, bottom most y coordinate is for score/timer
+				; I actually mapped the maze out in an Excel spreadsheet so I had a nice visual to work with...
+ 00000241  00000014 [		mazeTable	BYTE	20 DUP(177),10,13	; row 1
+	    B1
+	   ] 0A 0D
+ 00000257 = 00000016		RowSize = ($ - mazeTable)
+ 00000257  46 20 20 20 B1				BYTE	70,32,32,32,177,177,177,32,177,32,32,32,32,32,177,36,32,32,32,177,10,13 ; row 2
+	   B1 B1 20 B1 20
+	   20 20 20 20 B1
+	   24 20 20 20 B1
+	   0A 0D
+ 0000026D  B1 B1 B1 20 26				BYTE	177,177,177,32,38,32,177,32,177,32,177,177,177,32,177,177,177,177,32,177,10,13 ; row 3
+	   20 B1 20 B1 20
+	   B1 B1 B1 20 B1
+	   B1 B1 B1 20 B1
+	   0A 0D
+ 00000283  B1 B1 B1 20 B1				BYTE	177,177,177,32,177,32,32,32,32,32,177,177,177,32,177,177,32,32,32,177,10,13 ; row 4
+	   20 20 20 20 20
+	   B1 B1 B1 20 B1
+	   B1 20 20 20 B1
+	   0A 0D
+ 00000299  B1 24 20 20 B1				BYTE	177,36,32,32,177,177,177,177,177,177,177,177,177,32,177,177,32,177,177,177,10,13 ; row 5
+	   B1 B1 B1 B1 B1
+	   B1 B1 B1 20 B1
+	   B1 20 B1 B1 B1
+	   0A 0D
+ 000002AF  B1 B1 B1 B1 B1				BYTE	177,177,177,177,177,177,32,177,38,177,32,177,177,32,177,177,32,177,177,177,10,13 ; row 6
+	   B1 20 B1 26 B1
+	   20 B1 B1 20 B1
+	   B1 20 B1 B1 B1
+	   0A 0D
+ 000002C5  B1 B1					BYTE	177,177,12 DUP(32),177,177,32,32,32,177,10,13 ; row 7
+	   0000000C [
+	    20
+	   ] B1 B1 20 20
+	   20 B1 0A 0D
+ 000002DB  B1 B1 20					BYTE	177,177,32,13 DUP(177),32,177,177,177,10,13 ; row 8
+	   0000000D [
+	    B1
+	   ] 20 B1 B1 B1
+	   0A 0D
+ 000002F1  B1 B1 20 B1 26				BYTE	177,177,32,177,38,32,6 DUP(177),32,177,177,177,32,177,177,177,10,13 ; row 9
+	   20
+	   00000006 [
+	    B1
+	   ] 20 B1 B1 B1
+	   20 B1 B1 B1 0A
+	   0D
+ 00000307  B1 B1 20 B1 B1				BYTE	177,177,32,177,177,32,177,177,9 DUP(32),38,177,177,10,13 ; row 10
+	   20 B1 B1
+	   00000009 [
+	    20
+	   ] 26 B1 B1 0A
+	   0D
+ 0000031D  B1 B1 20 B1 B1				BYTE	177,177,32,177,177,32,177,177,32,177,177,32,177,177,177,32,177,32,177,177,10,13 ; row 11
+	   20 B1 B1 20 B1
+	   B1 20 B1 B1 B1
+	   20 B1 20 B1 B1
+	   0A 0D
+ 00000333  B1 B1					BYTE	177,177,7 DUP(32),6 DUP(177),32,177,32,177,177,10,13 ; row 12
+	   00000007 [
+	    20
+	   ]
+	   00000006 [
+	    B1
+	   ] 20 B1 20 B1
+	   B1 0A 0D
+ 00000349  0000000D [					BYTE	13 DUP(177),32,177,32,177,32,32,177,10,13 ; row 13
+	    B1
+	   ] 20 B1 20 B1
+	   20 20 B1 0A 0D
+ 0000035F  00000009 [					BYTE	9 DUP(177),32,177,177,177,32,177,32,177,32,177,177,10,13 ; row 14
+	    B1
+	   ] 20 B1 B1 B1
+	   20 B1 20 B1 20
+	   B1 B1 0A 0D
+ 00000375  B1 26					BYTE	177,38,10 DUP(32),177,32,177,177,177,32,177,177,10,13 ; row 15
+	   0000000A [
+	    20
+	   ] B1 20 B1 B1
+	   B1 20 B1 B1 0A
+	   0D
+ 0000038B  B1 B1 20 B1 B1				BYTE	177,177,32,177,177,177,32,177,177,177,177,32,177,5 DUP(32),177,177,10,13 ; row 16
+	   B1 20 B1 B1 B1
+	   B1 20 B1
+	   00000005 [
+	    20
+	   ] B1 B1 0A 0D
+ 000003A1  B1 B1 20 20 20				BYTE	177,177,32,32,32,177,32,177,177,177,177,32,177,32,177,177,32,177,177,177,10,13 ; row 17
+	   B1 20 B1 B1 B1
+	   B1 20 B1 20 B1
+	   B1 20 B1 B1 B1
+	   0A 0D
+ 000003B7  00000004 [					BYTE	4 DUP(177),32,177,32,32,38,177,177,32,177,32,177,177,32,177,177,177,10,13 ; row 18
+	    B1
+	   ] 20 B1 20 20
+	   26 B1 B1 20 B1
+	   20 B1 B1 20 B1
+	   B1 B1 0A 0D
+ 000003CD  00000004 [					BYTE	4 DUP(177),32,6 DUP(177),32,38,32,6 DUP(177),10,13 ; row 19
+	    B1
+	   ] 20
+	   00000006 [
+	    B1
+	   ] 20 26 20
+	   00000006 [
+	    B1
+	   ] 0A 0D
+ 000003E3  00000014 [					BYTE	20 DUP(177),10,13 ; row 20
+	    B1
+	   ] 0A 0D
+ 000003F9  00000014 [					BYTE	20 DUP(32),10,13,0 ; row 21
+	    20
+	   ] 0A 0D 00
+
+
+
+ 00000000			.code
+ 00000006			player STRUCT
+ 00000000  00000000			Score DWORD 0
+ 00000004  00				X BYTE ?
+ 00000005  00				Y BYTE ?
+				player ENDS
+
+ 00000410			.data
+ 00000410 00			gamestate BYTE 0		; tells us the game state. In menu (0), or in the game (1), or in end-game screen (2)
+ 00000411 01			gamerunning BYTE 1
+ 00000412 00			wincondition BYTE 0
+ 00000413 00000000 04 12	mazeplayer player <0,4,18>
+ 00000419 00000064		timeleft DWORD 100
+ 0000041D 00000000		timeiter DWORD 0
+ 00000421 00			lastMove BYTE 0		; 0-up, 1-down, 2-left, 3-right
+ 00000422  00000015 [		nameBuffer BYTE 21 DUP(0)
+	    00
+	   ]
+ 00000437 00000000		nameSize DWORD 0
+ 0000043B 73 63 6F 72 65	fileName BYTE "scores.txt",0
+	   73 2E 74 78 74
+	   00
+ 00000446 00000000		fileHandle DWORD ?
+
+ 00000000			.code
+				; Resulting character is stored in al
+				; Offset into the table is stored in edi (for removing score items)
+				; zero-based!
+				; put X coord in esi
+				; put Y coord in ebx
+ 00000000			CheckLocation PROC USES ebx esi ecx
+					LOCAL row_index:DWORD, column_index:DWORD
+
+ 00000000  55		   *	    push   ebp
+ 00000001  8B EC	   *	    mov    ebp, esp
+ 00000003  83 C4 F8	   *	    add    esp, 0FFFFFFF8h
+ 00000006  53		   *	    push   ebx
+ 00000007  56		   *	    push   esi
+ 00000008  51		   *	    push   ecx
+ 00000009  89 5D FC			mov row_index,ebx
+ 0000000C  89 75 F8			mov column_index,esi
+ 0000000F  BB 00000000			mov ebx,0
+ 00000014  BE 00000000			mov esi,0
+ 00000019  8B 45 FC			mov eax,row_index
+ 0000001C  B9 00000016			mov ecx,RowSize
+ 00000021  F7 E1			mul ecx
+
+					; This sample was taken from the book and adapted as a procedure
+					; this handles the 2-Dimensional array for our maze table/layout
+ 00000023  BB 00000241 R		mov ebx,offset mazeTable
+ 00000028  03 D8			add ebx,eax
+ 0000002A  8B 75 F8			mov esi,column_index
+ 0000002D  33 C0			xor eax,eax
+ 0000002F  8A 04 1E			mov al,[ebx + esi]
+
+					;mov edi,offset mazeTable
+					;add edi,eax
+					;add edi,esi
+ 00000032  8B F8			mov edi,eax
+ 00000034  03 FE			add edi,esi
+					ret
+ 00000036  59		   *	    pop    ecx
+ 00000037  5E		   *	    pop    esi
+ 00000038  5B		   *	    pop    ebx
+ 00000039  C9		   *	    leave  
+ 0000003A  C3		   *	    ret    00000h
+ 0000003B			CheckLocation ENDP
+
+ 0000003B			ClearMazeChar PROC USES ebx esi ecx
+					LOCAL row_index:DWORD, column_index:DWORD
+
+ 0000003B  55		   *	    push   ebp
+ 0000003C  8B EC	   *	    mov    ebp, esp
+ 0000003E  83 C4 F8	   *	    add    esp, 0FFFFFFF8h
+ 00000041  53		   *	    push   ebx
+ 00000042  56		   *	    push   esi
+ 00000043  51		   *	    push   ecx
+ 00000044  89 5D FC			mov row_index,ebx
+ 00000047  89 75 F8			mov column_index,esi
+ 0000004A  BB 00000000			mov ebx,0
+ 0000004F  BE 00000000			mov esi,0
+ 00000054  8B 45 FC			mov eax,row_index
+ 00000057  B9 00000016			mov ecx,RowSize
+ 0000005C  F7 E1			mul ecx
+
+					; This sample was taken from the book and adapted as a procedure
+					; this handles the 2-Dimensional array for our maze table/layout
+ 0000005E  BB 00000241 R		mov ebx,offset mazeTable
+ 00000063  03 D8			add ebx,eax
+ 00000065  8B 75 F8			mov esi,column_index
+ 00000068  B2 20			mov dl,32
+ 0000006A  88 14 1E			mov [ebx + esi],dl
+					ret
+ 0000006D  59		   *	    pop    ecx
+ 0000006E  5E		   *	    pop    esi
+ 0000006F  5B		   *	    pop    ebx
+ 00000070  C9		   *	    leave  
+ 00000071  C3		   *	    ret    00000h
+ 00000072			ClearMazeChar ENDP
+
+ 00000072			DrawMaze PROC USES edx
+ 00000072  52		   *	    push   edx
+ 00000073  33 D2			xor edx,edx
+ 00000075  BA 00000241 R		mov edx, offset mazeTable
+ 0000007A  E8 00000000 E		call WriteString
+					ret
+ 0000007F  5A		   *	    pop    edx
+ 00000080  C3		   *	    ret    00000h
+ 00000081			DrawMaze ENDP
+
+ 00000081			DrawPlayer PROC USES eax edx
+ 00000081  50		   *	    push   eax
+ 00000082  52		   *	    push   edx
+ 00000083  8A 15 00000417 R		mov dl,mazeplayer.X
+ 00000089  8A 35 00000418 R		mov dh,mazeplayer.Y
+ 0000008F  E8 00000000 E		call Gotoxy
+
+ 00000094  B0 40			mov al,'@'
+ 00000096  E8 00000000 E		call WriteChar
+					ret
+ 0000009B  5A		   *	    pop    edx
+ 0000009C  58		   *	    pop    eax
+ 0000009D  C3		   *	    ret    00000h
+ 0000009E			DrawPlayer ENDP
+
+ 0000009E			DrawScore PROC USES eax edx
+ 0000009E  50		   *	    push   eax
+ 0000009F  52		   *	    push   edx
+ 000000A0  B2 0A			mov dl,10
+ 000000A2  B6 14			mov dh,20
+ 000000A4  E8 00000000 E		call Gotoxy
+
+ 000000A9  33 D2			xor edx,edx
+ 000000AB  BA 000001C8 R		mov edx,offset scoreString
+ 000000B0  E8 00000000 E		call WriteString
+
+ 000000B5  A1 00000413 R		mov eax,mazeplayer.Score
+ 000000BA  E8 00000000 E		call WriteDec
+					ret
+ 000000BF  5A		   *	    pop    edx
+ 000000C0  58		   *	    pop    eax
+ 000000C1  C3		   *	    ret    00000h
+ 000000C2			DrawScore ENDP
+
+ 000000C2			DrawTime PROC USES eax edx
+ 000000C2  50		   *	    push   eax
+ 000000C3  52		   *	    push   edx
+ 000000C4  B2 00			mov dl,0
+ 000000C6  B6 14			mov dh,20
+ 000000C8  E8 00000000 E		call Gotoxy
+
+ 000000CD  33 D2			xor edx,edx
+ 000000CF  BA 000001CF R		mov edx,offset timeString
+ 000000D4  E8 00000000 E		call WriteString
+
+ 000000D9  A1 00000419 R		mov eax,timeleft
+ 000000DE  E8 00000000 E		call WriteDec
+					ret
+ 000000E3  5A		   *	    pop    edx
+ 000000E4  58		   *	    pop    eax
+ 000000E5  C3		   *	    ret    00000h
+ 000000E6			DrawTime ENDP
+
+ 000000E6			DoMainMenu PROC USES edx
+ 000000E6  52		   *	    push   edx
+ 000000E7  BA 00000000 R		mov edx,offset menuStrings
+ 000000EC  E8 00000000 E		call WriteString
+ 000000F1  BA 000001D5 R		mov edx,offset askChoice
+ 000000F6  E8 00000000 E		call WriteString
+ 000000FB  E8 00000000 E		call ReadDec
+					ret
+ 00000100  5A		   *	    pop    edx
+ 00000101  C3		   *	    ret    00000h
+ 00000102			DoMainMenu ENDP
+
+ 00000102			ShowHelp PROC USES edx
+ 00000102  52		   *	    push   edx
+ 00000103  BA 0000005C R		mov edx,offset helpString
+ 00000108  E8 00000000 E		call WriteString
+					ret
+ 0000010D  5A		   *	    pop    edx
+ 0000010E  C3		   *	    ret    00000h
+ 0000010F			ShowHelp ENDP
+
+ 0000010F			ShowEndgame PROC USES edx
+ 0000010F  52		   *	    push   edx
+ 00000110  E8 00000000 E		call ClrScr
+					.IF(wincondition == 0)	; lose the game
+ 00000115  80 3D 00000412 R
+	   00		   *	    cmp    wincondition, 000h
+ 0000011C  75 11	   *	    jne    @C0001
+ 0000011E  BA 00000169 R			mov edx,offset loseString
+ 00000123  E8 00000000 E			call WriteString
+ 00000128  E8 00000000 E			call WaitMsg
+					.ELSEIF(wincondition == 1)
+ 0000012D  EB 40	   *	    jmp    @C0003
+ 0000012F		   *@C0001:
+ 0000012F  80 3D 00000412 R
+	   01		   *	    cmp    wincondition, 001h
+ 00000136  75 37	   *	    jne    @C0004
+ 00000138  BA 00000182 R			mov edx,offset winString
+ 0000013D  E8 00000000 E			call WriteString
+ 00000142  BA 00000122 R			mov edx,offset endgameString1
+ 00000147  E8 00000000 E			call WriteString
+ 0000014C  A1 00000413 R			mov eax,mazeplayer.Score
+ 00000151  E8 00000000 E			call WriteDec
+ 00000156  E8 00000000 E			call CRLF
+ 0000015B  BA 00000132 R			mov edx,offset endgameString2
+ 00000160  E8 00000000 E			call WriteString
+ 00000165  E8 00000000 E			call CRLF
+ 0000016A  E8 00000000 E			call ReadDec
+					.ENDIF
+ 0000016F		   *@C0004:
+ 0000016F		   *@C0003:
+					ret
+ 0000016F  5A		   *	    pop    edx
+ 00000170  C3		   *	    ret    00000h
+ 00000171			ShowEndgame ENDP
+
+ 00000171			DoInput PROC USES eax edx ebx esi
+ 00000171  50		   *	    push   eax
+ 00000172  52		   *	    push   edx
+ 00000173  53		   *	    push   ebx
+ 00000174  56		   *	    push   esi
+ 00000175  E8 00000000 E		call ReadKey
+					.IF(dx == VK_UP) ; up arrow
+ 0000017A  66| 83 FA 26	   *	    cmp    dx, VK_UP
+ 0000017E  75 0F	   *	    jne    @C0006
+ 00000180  FE 0D 00000418 R			dec mazeplayer.Y
+ 00000186  C6 05 00000421 R			mov lastMove,0
+	   00
+					.ELSEIF(dx == VK_DOWN)	; down arrow
+ 0000018D  EB 3D	   *	    jmp    @C0008
+ 0000018F		   *@C0006:
+ 0000018F  66| 83 FA 28	   *	    cmp    dx, VK_DOWN
+ 00000193  75 0F	   *	    jne    @C0009
+ 00000195  FE 05 00000418 R			inc mazeplayer.Y
+ 0000019B  C6 05 00000421 R			mov lastMove,1
+	   01
+					.ELSEIF(dx == VK_LEFT) ; left arrow
+ 000001A2  EB 28	   *	    jmp    @C000B
+ 000001A4		   *@C0009:
+ 000001A4  66| 83 FA 25	   *	    cmp    dx, VK_LEFT
+ 000001A8  75 0F	   *	    jne    @C000C
+ 000001AA  FE 0D 00000417 R			dec mazeplayer.X
+ 000001B0  C6 05 00000421 R			mov lastMove,2
+	   02
+					.ELSEIF(dx == VK_RIGHT) ; right arrow
+ 000001B7  EB 13	   *	    jmp    @C000E
+ 000001B9		   *@C000C:
+ 000001B9  66| 83 FA 27	   *	    cmp    dx, VK_RIGHT
+ 000001BD  75 0D	   *	    jne    @C000F
+ 000001BF  FE 05 00000417 R			inc mazeplayer.X
+ 000001C5  C6 05 00000421 R			mov lastMove,3
+	   03
+					.ENDIF
+ 000001CC		   *@C000F:
+ 000001CC		   *@C000E:
+ 000001CC		   *@C000B:
+ 000001CC		   *@C0008:
+					
+ 000001CC  0F B6 35			movzx esi,mazeplayer.X
+	   00000417 R
+ 000001D3  0F B6 1D			movzx ebx,mazeplayer.Y
+	   00000418 R
+ 000001DA  E8 FFFFFE21			call CheckLocation
+					.IF(al == 177) ; undo the move if it's not valid
+ 000001DF  3C B1	   *	    cmp    al, 0B1h
+ 000001E1  75 4A	   *	    jne    @C0011
+						.IF(lastMove == 0)
+ 000001E3  80 3D 00000421 R
+	   00		   *	    cmp    lastMove, 000h
+ 000001EA  75 0B	   *	    jne    @C0013
+ 000001EC  FE 05 00000418 R				inc mazeplayer.Y
+						.ELSEIF(lastMove == 1)
+ 000001F2  E9 0000009E	   *	    jmp    @C0015
+ 000001F7		   *@C0013:
+ 000001F7  80 3D 00000421 R
+	   01		   *	    cmp    lastMove, 001h
+ 000001FE  75 0B	   *	    jne    @C0016
+ 00000200  FE 0D 00000418 R				dec mazeplayer.Y
+						.ELSEIF(lastMove == 2)
+ 00000206  E9 0000008A	   *	    jmp    @C0018
+ 0000020B		   *@C0016:
+ 0000020B  80 3D 00000421 R
+	   02		   *	    cmp    lastMove, 002h
+ 00000212  75 08	   *	    jne    @C0019
+ 00000214  FE 05 00000417 R				inc mazeplayer.X
+						.ELSEIF(lastMove == 3)
+ 0000021A  EB 79	   *	    jmp    @C001B
+ 0000021C		   *@C0019:
+ 0000021C  80 3D 00000421 R
+	   03		   *	    cmp    lastMove, 003h
+ 00000223  75 70	   *	    jne    @C001C
+ 00000225  FE 0D 00000417 R				dec mazeplayer.X
+						.ENDIF
+					.ELSEIF(al == 38)	; ampersand = +50 points
+ 0000022B  EB 68	   *	    jmp    @C001E
+ 0000022D		   *@C0011:
+ 0000022D  3C 26	   *	    cmp    al, 026h
+ 0000022F  75 1E	   *	    jne    @C001F
+ 00000231  83 05 00000413 R			add mazeplayer.Score,50
+	   32
+ 00000238  0F B6 35				movzx esi,mazeplayer.X
+	   00000417 R
+ 0000023F  0F B6 1D				movzx ebx,mazeplayer.Y
+	   00000418 R
+ 00000246  B2 20				mov dl,32
+ 00000248  E8 FFFFFDEE				call ClearMazeChar
+					.ELSEIF(al == 36)	; dollar sign = +200 points
+ 0000024D  EB 46	   *	    jmp    @C0021
+ 0000024F		   *@C001F:
+ 0000024F  3C 24	   *	    cmp    al, 024h
+ 00000251  75 1F	   *	    jne    @C0022
+ 00000253  81 05 00000413 R			add mazeplayer.Score,200
+	   000000C8
+ 0000025D  0F B6 35				movzx esi,mazeplayer.X
+	   00000417 R
+ 00000264  0F B6 1D				movzx ebx,mazeplayer.Y
+	   00000418 R
+ 0000026B  E8 FFFFFDCB				call ClearMazeChar
+					.ELSEIF(al == 'F')	; F ends the game successfully
+ 00000270  EB 23	   *	    jmp    @C0024
+ 00000272		   *@C0022:
+ 00000272  3C 46	   *	    cmp    al, 'F'
+ 00000274  75 1F	   *	    jne    @C0025
+ 00000276  B8 00000003				mov eax,3
+ 0000027B  F7 25 00000419 R			mul timeleft
+ 00000281  01 05 00000413 R			add mazeplayer.Score,eax
+ 00000287  C6 05 00000412 R			mov wincondition,1
+	   01
+ 0000028E  C6 05 00000410 R			mov gamestate,2
+	   02
+					.ENDIF
+ 00000295		   *@C0025:
+ 00000295		   *@C0024:
+ 00000295		   *@C0021:
+ 00000295		   *@C001E:
+ 00000295		   *@C001C:
+ 00000295		   *@C001B:
+ 00000295		   *@C0018:
+ 00000295		   *@C0015:
+					ret
+ 00000295  5E		   *	    pop    esi
+ 00000296  5B		   *	    pop    ebx
+ 00000297  5A		   *	    pop    edx
+ 00000298  58		   *	    pop    eax
+ 00000299  C3		   *	    ret    00000h
+ 0000029A			DoInput ENDP
+
+ 0000029A			ReadScore PROC USES edx eax
+ 0000029A  52		   *	    push   edx
+ 0000029B  50		   *	    push   eax
+ 0000029C  BA 0000043B R		mov edx,offset fileName
+ 000002A1  E8 00000000 E		call OpenInputFile
+					.IF(eax == INVALID_HANDLE_VALUE)	; failed to open file? print out a message
+ 000002A6  83 F8 FF	   *	    cmp    eax, INVALID_HANDLE_VALUE
+ 000002A9  75 19	   *	    jne    @C0027
+ 000002AB  E8 00000000 E			call ClrScr
+ 000002B0  BA 0000020A R			mov edx,offset failScoreString
+ 000002B5  E8 00000000 E			call WriteString
+ 000002BA  E8 00000000 E			call WaitMsg
+					.ELSE
+ 000002BF  E9 00000088	   *	    jmp    @C0029
+ 000002C4		   *@C0027:
+ 000002C4  E8 00000000 E			call ClrScr
+ 000002C9  A3 00000446 R			mov fileHandle,eax
+ 000002CE  BA 00000437 R			mov edx,offset nameSize
+ 000002D3  B9 00000004				mov ecx,4
+ 000002D8  E8 00000000 E			call ReadFromFile
+ 000002DD  A1 00000446 R			mov eax,fileHandle
+ 000002E2  BA 00000422 R			mov edx,offset nameBuffer
+ 000002E7  8B 0D 00000437 R			mov ecx,nameSize
+ 000002ED  E8 00000000 E			call ReadFromFile
+ 000002F2  A1 00000446 R			mov eax,fileHandle
+ 000002F7  BA 00000413 R			mov edx,offset mazeplayer.Score
+ 000002FC  B9 00000004				mov ecx,4
+ 00000301  E8 00000000 E			call ReadFromFile
+
+ 00000306  BA 00000422 R			mov edx,offset nameBuffer
+ 0000030B  E8 00000000 E			call WriteString
+ 00000310  E8 00000000 E			call CRLF
+ 00000315  BA 000001C8 R			mov edx,offset scoreString
+ 0000031A  E8 00000000 E			call WriteString
+ 0000031F  E8 00000000 E			call CRLF
+ 00000324  A1 00000413 R			mov eax,mazeplayer.Score
+ 00000329  E8 00000000 E			call WriteDec
+ 0000032E  E8 00000000 E			call CRLF
+ 00000333  E8 00000000 E			call WaitMsg
+ 00000338  C7 05 00000413 R			mov mazeplayer.Score,0	; reset the score
+	   00000000
+ 00000342  A1 00000446 R			mov eax,fileHandle
+ 00000347  E8 00000000 E			call CloseFile
+					.ENDIF
+ 0000034C		   *@C0029:
+					ret
+ 0000034C  58		   *	    pop    eax
+ 0000034D  5A		   *	    pop    edx
+ 0000034E  C3		   *	    ret    00000h
+ 0000034F			ReadScore ENDP
+
+ 0000034F			.code
+ 0000034F			main proc
+					.WHILE(gamerunning == 1)	; main menu
+ 0000034F  E9 00000188	   *	    jmp    @C002A
+ 00000354		   *@C002B:
+						.IF(gamestate == 0)
+ 00000354  80 3D 00000410 R
+	   00		   *	    cmp    gamestate, 000h
+ 0000035B  75 5D	   *	    jne    @C002C
+ 0000035D  E8 00000000 E				call ClrScr
+ 00000362  E8 FFFFFD7F					call DoMainMenu
+							.IF(eax == 1)	; help
+ 00000367  83 F8 01	   *	    cmp    eax, 001h
+ 0000036A  75 14	   *	    jne    @C002E
+ 0000036C  E8 00000000 E					call ClrScr
+ 00000371  E8 FFFFFD8C						call ShowHelp
+ 00000376  E8 00000000 E					call WaitMsg
+							.ELSEIF(eax == 2)	; play
+ 0000037B  E9 0000015C	   *	    jmp    @C0030
+ 00000380		   *@C002E:
+ 00000380  83 F8 02	   *	    cmp    eax, 002h
+ 00000383  75 11	   *	    jne    @C0031
+ 00000385  E8 00000000 E					call ClrScr
+ 0000038A  C6 05 00000410 R					mov gamestate,1
+	   01
+							.ELSEIF(eax == 3)	; review score (from file)
+ 00000391  E9 00000146	   *	    jmp    @C0033
+ 00000396		   *@C0031:
+ 00000396  83 F8 03	   *	    cmp    eax, 003h
+ 00000399  75 0A	   *	    jne    @C0034
+ 0000039B  E8 FFFFFEFA						call ReadScore
+							.ELSEIF(eax == 4)	; quit
+ 000003A0  E9 00000137	   *	    jmp    @C0036
+ 000003A5		   *@C0034:
+ 000003A5  83 F8 04	   *	    cmp    eax, 004h
+ 000003A8  0F 85 0000012E  *	    jne    @C0037
+ 000003AE  C6 05 00000411 R					mov gamerunning,0
+	   00
+							.ENDIF
+						.ELSEIF(gamestate == 1)	; playing the maze
+ 000003B5  E9 00000122	   *	    jmp    @C0039
+ 000003BA		   *@C002C:
+ 000003BA  80 3D 00000410 R
+	   01		   *	    cmp    gamestate, 001h
+ 000003C1  75 61	   *	    jne    @C003A
+ 000003C3  E8 FFFFFDA9					call DoInput
+ 000003C8  E8 00000000 E				call ClrScr
+ 000003CD  E8 FFFFFCA0					call DrawMaze
+ 000003D2  E8 FFFFFCAA					call DrawPlayer
+ 000003D7  E8 FFFFFCE6					call DrawTime
+ 000003DC  E8 FFFFFCBD					call DrawScore
+
+							; I know the following avoids the use of GetMSeconds
+							; and in reality this is just a horribly lazy timer
+							; but it works, and I needed a delay anyway to reduce flickering
+							; (at least on my Windows 10 system, no delay caused serious flickering in the console)
+ 000003E1  50						push eax
+ 000003E2  B8 00000032					mov eax, 50
+ 000003E7  01 05 0000041D R				add timeiter,eax
+							.IF(timeiter >= 1000)
+ 000003ED  81 3D 0000041D R
+	   000003E8	   *	    cmp    timeiter, 003E8h
+ 000003F7  72 10	   *	    jb	@C003C
+ 000003F9  C7 05 0000041D R					mov timeiter,0
+	   00000000
+ 00000403  FF 0D 00000419 R					dec timeleft
+							.ENDIF
+							.IF(timeleft <= 0)
+ 00000409		   *@C003C:
+ 00000409  83 3D 00000419 R
+	   00		   *	    cmp    timeleft, 000h
+ 00000410  77 07	   *	    ja	@C003E
+ 00000412  C6 05 00000410 R					mov gamestate,2
+	   02
+							.ENDIF
+ 00000419		   *@C003E:
+ 00000419  E8 00000000 E				call Delay
+ 0000041E  58						pop eax
+						.ELSEIF(gamestate == 2)	; end game screen (win/lose)
+ 0000041F  E9 000000B8	   *	    jmp    @C0040
+ 00000424		   *@C003A:
+ 00000424  80 3D 00000410 R
+	   02		   *	    cmp    gamestate, 002h
+ 0000042B  0F 85 000000AB  *	    jne    @C0041
+ 00000431  E8 FFFFFCD9					call ShowEndgame
+							.IF(eax == 1)
+ 00000436  83 F8 01	   *	    cmp    eax, 001h
+ 00000439  0F 85 00000091  *	    jne    @C0043
+ 0000043F  E8 00000000 E					call ClrScr
+ 00000444  BA 000001E9 R					mov edx,offset askName
+ 00000449  E8 00000000 E					call WriteString
+ 0000044E  BA 00000422 R					mov edx,offset nameBuffer
+ 00000453  B9 00000014						mov ecx,20
+ 00000458  E8 00000000 E					call ReadString	; get the player's name
+ 0000045D  A3 00000437 R					mov nameSize,eax
+ 00000462  BA 0000043B R					mov edx,offset fileName
+ 00000467  E8 00000000 E					call CreateOutputFile	; create the file
+ 0000046C  A3 00000446 R					mov fileHandle,eax
+ 00000471  BA 00000437 R					mov edx,offset nameSize
+ 00000476  B9 00000004						mov ecx,4
+ 0000047B  E8 00000000 E					call WriteToFile	; write the length of the name first
+ 00000480  A1 00000446 R					mov eax,fileHandle
+ 00000485  BA 00000422 R					mov edx,offset nameBuffer
+ 0000048A  8B 0D 00000437 R					mov ecx,nameSize
+ 00000490  E8 00000000 E					call WriteToFile	; then write the actual name
+ 00000495  A1 00000446 R					mov eax,fileHandle
+ 0000049A  BA 00000413 R					mov edx,offset mazeplayer.Score
+ 0000049F  B9 00000004						mov ecx,4
+ 000004A4  E8 00000000 E					call WriteToFile	; lastly, write the score
+ 000004A9  A1 00000446 R					mov eax,fileHandle
+ 000004AE  E8 00000000 E					call CloseFile
+
+ 000004B3  E8 00000000 E					call ClrScr
+ 000004B8  BA 000001FB R					mov edx,offset scoreSaved
+ 000004BD  E8 00000000 E					call WriteString
+ 000004C2  E8 00000000 E					call WaitMsg
+
+ 000004C7  C6 05 00000411 R					mov gamerunning,0
+	   00
+							.ELSEIF(eax == 2)
+ 000004CE  EB 0C	   *	    jmp    @C0045
+ 000004D0		   *@C0043:
+ 000004D0  83 F8 02	   *	    cmp    eax, 002h
+ 000004D3  75 07	   *	    jne    @C0046
+ 000004D5  C6 05 00000411 R					mov gamerunning,0
+	   00
+							.ENDIF
+						.ENDIF
+ 000004DC		   *@C0046:
+ 000004DC		   *@C0045:
+					.ENDW
+ 000004DC		   *@C0041:
+ 000004DC		   *@C0040:
+ 000004DC		   *@C0039:
+ 000004DC		   *@C0037:
+ 000004DC		   *@C0036:
+ 000004DC		   *@C0033:
+ 000004DC		   *@C0030:
+ 000004DC		   *@C002A:
+ 000004DC  80 3D 00000411 R
+	   01		   *	    cmp    gamerunning, 001h
+ 000004E3  0F 84 FFFFFE6B  *	    je	@C002B
+					
+					;call WaitMsg
+					exit
+ 000004E9  6A 00	   *	    push   +000000000h
+ 000004EB  E8 00000000 E   *	    call   ExitProcess
+ 000004F0			main endp
+				end main
+Microsoft (R) Macro Assembler Version 14.00.23506.0	    06/03/16 20:57:18
+Main.asm						     Symbols 2 - 1
+
+
+
+
+Structures and Unions:
+
+                N a m e                  Size
+                                         Offset      Type
+
+CONSOLE_CURSOR_INFO  . . . . . .	 00000008
+  dwSize . . . . . . . . . . . .	 00000000	 DWord
+  bVisible . . . . . . . . . . .	 00000004	 DWord
+CONSOLE_SCREEN_BUFFER_INFO . . .	 00000016
+  dwSize . . . . . . . . . . . .	 00000000	 DWord
+  dwCursorPosition . . . . . . .	 00000004	 DWord
+  wAttributes  . . . . . . . . .	 00000008	 Word
+  srWindow . . . . . . . . . . .	 0000000A	 QWord
+  dwMaximumWindowSize  . . . . .	 00000012	 DWord
+COORD  . . . . . . . . . . . . .	 00000004
+  X  . . . . . . . . . . . . . .	 00000000	 Word
+  Y  . . . . . . . . . . . . . .	 00000002	 Word
+FILETIME . . . . . . . . . . . .	 00000008
+  loDateTime . . . . . . . . . .	 00000000	 DWord
+  hiDateTime . . . . . . . . . .	 00000004	 DWord
+FOCUS_EVENT_RECORD . . . . . . .	 00000004
+  bSetFocus  . . . . . . . . . .	 00000000	 DWord
+FPU_ENVIRON  . . . . . . . . . .	 0000001C
+  controlWord  . . . . . . . . .	 00000000	 Word
+  statusWord . . . . . . . . . .	 00000004	 Word
+  tagWord  . . . . . . . . . . .	 00000008	 Word
+  instrPointerOffset . . . . . .	 0000000C	 DWord
+  instrPointerSelector . . . . .	 00000010	 DWord
+  operandPointerOffset . . . . .	 00000014	 DWord
+  operandPointerSelector . . . .	 00000018	 Word
+INPUT_RECORD . . . . . . . . . .	 00000014
+  EventType  . . . . . . . . . .	 00000000	 Word
+  Event  . . . . . . . . . . . .	 00000004	 XmmWord
+  bKeyDown . . . . . . . . . . .	 00000000	 DWord
+  wRepeatCount . . . . . . . . .	 00000004	 Word
+  wVirtualKeyCode  . . . . . . .	 00000006	 Word
+  wVirtualScanCode . . . . . . .	 00000008	 Word
+  uChar  . . . . . . . . . . . .	 0000000A	 Word
+  UnicodeChar  . . . . . . . . .	 00000000	 Word
+  AsciiChar  . . . . . . . . . .	 00000000	 Byte
+  dwControlKeyState  . . . . . .	 0000000C	 DWord
+  dwMousePosition  . . . . . . .	 00000000	 DWord
+  dwButtonState  . . . . . . . .	 00000004	 DWord
+  dwMouseControlKeyState . . . .	 00000008	 DWord
+  dwEventFlags . . . . . . . . .	 0000000C	 DWord
+  dwSize . . . . . . . . . . . .	 00000000	 DWord
+  dwCommandId  . . . . . . . . .	 00000000	 DWord
+  bSetFocus  . . . . . . . . . .	 00000000	 DWord
+KEY_EVENT_RECORD . . . . . . . .	 00000010
+  bKeyDown . . . . . . . . . . .	 00000000	 DWord
+  wRepeatCount . . . . . . . . .	 00000004	 Word
+  wVirtualKeyCode  . . . . . . .	 00000006	 Word
+  wVirtualScanCode . . . . . . .	 00000008	 Word
+  uChar  . . . . . . . . . . . .	 0000000A	 Word
+  UnicodeChar  . . . . . . . . .	 00000000	 Word
+  AsciiChar  . . . . . . . . . .	 00000000	 Byte
+  dwControlKeyState  . . . . . .	 0000000C	 DWord
+MENU_EVENT_RECORD  . . . . . . .	 00000004
+  dwCommandId  . . . . . . . . .	 00000000	 DWord
+MOUSE_EVENT_RECORD . . . . . . .	 00000010
+  dwMousePosition  . . . . . . .	 00000000	 DWord
+  dwButtonState  . . . . . . . .	 00000004	 DWord
+  dwMouseControlKeyState . . . .	 00000008	 DWord
+  dwEventFlags . . . . . . . . .	 0000000C	 DWord
+SMALL_RECT . . . . . . . . . . .	 00000008
+  Left . . . . . . . . . . . . .	 00000000	 Word
+  Top  . . . . . . . . . . . . .	 00000002	 Word
+  Right  . . . . . . . . . . . .	 00000004	 Word
+  Bottom . . . . . . . . . . . .	 00000006	 Word
+SYSTEMTIME . . . . . . . . . . .	 00000010
+  wYear  . . . . . . . . . . . .	 00000000	 Word
+  wMonth . . . . . . . . . . . .	 00000002	 Word
+  wDayOfWeek . . . . . . . . . .	 00000004	 Word
+  wDay . . . . . . . . . . . . .	 00000006	 Word
+  wHour  . . . . . . . . . . . .	 00000008	 Word
+  wMinute  . . . . . . . . . . .	 0000000A	 Word
+  wSecond  . . . . . . . . . . .	 0000000C	 Word
+  wMilliseconds  . . . . . . . .	 0000000E	 Word
+WINDOW_BUFFER_SIZE_RECORD  . . .	 00000004
+  dwSize . . . . . . . . . . . .	 00000000	 DWord
+player . . . . . . . . . . . . .	 00000006
+  Score  . . . . . . . . . . . .	 00000000	 DWord
+  X  . . . . . . . . . . . . . .	 00000004	 Byte
+  Y  . . . . . . . . . . . . . .	 00000005	 Byte
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+FLAT . . . . . . . . . . . . . .	GROUP
+STACK  . . . . . . . . . . . . .	32 Bit	 00001000 Para	  Stack	  'STACK'	 
+_DATA  . . . . . . . . . . . . .	32 Bit	 0000044A Para	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 000004F0 Para	  Public  'CODE'	
+
+
+Procedures, parameters, and locals:
+
+                N a m e                 Type     Value    Attr
+
+CheckLocation  . . . . . . . . .	P Near	 00000000 _TEXT	Length= 0000003B Public STDCALL
+  row_index  . . . . . . . . . .	DWord	 bp - 00000004
+  column_index . . . . . . . . .	DWord	 bp - 00000008
+ClearMazeChar  . . . . . . . . .	P Near	 0000003B _TEXT	Length= 00000037 Public STDCALL
+  row_index  . . . . . . . . . .	DWord	 bp - 00000004
+  column_index . . . . . . . . .	DWord	 bp - 00000008
+CloseFile  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+CloseHandle  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Clrscr . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+CreateFileA  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+CreateOutputFile . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Crlf . . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Delay  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+DoInput  . . . . . . . . . . . .	P Near	 00000171 _TEXT	Length= 00000129 Public STDCALL
+DoMainMenu . . . . . . . . . . .	P Near	 000000E6 _TEXT	Length= 0000001C Public STDCALL
+DrawMaze . . . . . . . . . . . .	P Near	 00000072 _TEXT	Length= 0000000F Public STDCALL
+DrawPlayer . . . . . . . . . . .	P Near	 00000081 _TEXT	Length= 0000001D Public STDCALL
+DrawScore  . . . . . . . . . . .	P Near	 0000009E _TEXT	Length= 00000024 Public STDCALL
+DrawTime . . . . . . . . . . . .	P Near	 000000C2 _TEXT	Length= 00000024 Public STDCALL
+DumpMem  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+DumpRegs . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ExitProcess  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+FileTimeToDosDateTime  . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+FileTimeToSystemTime . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+FlushConsoleInputBuffer  . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+FormatMessageA . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetCommandLineA  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetCommandTail . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetConsoleCP . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetConsoleCursorInfo . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetConsoleMode . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetConsoleScreenBufferInfo . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetDateTime  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetFileTime  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetKeyState  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetLastError . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetLocalTime . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetMaxXY . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetMseconds  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetNumberOfConsoleInputEvents  .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetProcessHeap . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetStdHandle . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetSystemTime  . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetTextColor . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetTickCount . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Gotoxy . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+HeapAlloc  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+HeapCreate . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+HeapDestroy  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+HeapFree . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+HeapSize . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+IsDigit  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+LocalFree  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+MessageBoxA  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+MsgBoxAsk  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+MsgBox . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OpenInputFile  . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ParseDecimal32 . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ParseInteger32 . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+PeekConsoleInputA  . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Random32 . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+RandomRange  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Randomize  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadChar . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadConsoleA . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadConsoleInputA  . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadDec  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadFile . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadFloat  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadFromFile . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadHex  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadInt  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadKeyFlush . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadKey  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadScore  . . . . . . . . . . .	P Near	 0000029A _TEXT	Length= 000000B5 Public STDCALL
+ReadString . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleCursorInfo . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleCursorPosition . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleMode . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleScreenBufferSize . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleTextAttribute  . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleTitleA . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleWindowInfo . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetFilePointer . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetLocalTime . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetTextColor . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ShowEndgame  . . . . . . . . . .	P Near	 0000010F _TEXT	Length= 00000062 Public STDCALL
+ShowFPUStack . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ShowHelp . . . . . . . . . . . .	P Near	 00000102 _TEXT	Length= 0000000D Public STDCALL
+Sleep  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+StrLength  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Str_compare  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Str_copy . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Str_length . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Str_trim . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Str_ucase  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SystemTimeToFileTime . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WaitMsg  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteBinB  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteBin . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteChar  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteConsoleA  . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteConsoleOutputAttribute  . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteConsoleOutputCharacterA . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteDec . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteFile  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteFloat . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteHexB  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteHex . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteInt . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteStackFrameName  . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteStackFrame  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteString  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteToFile  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteWindowsMsg  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+main . . . . . . . . . . . . . .	P Near	 0000034F _TEXT	Length= 000001A1 Public STDCALL
+printf . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
+scanf  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
+wsprintfA  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+@CodeSize  . . . . . . . . . . .	Number	 00000000h   
+@DataSize  . . . . . . . . . . .	Number	 00000000h   
+@Interface . . . . . . . . . . .	Number	 00000003h   
+@Model . . . . . . . . . . . . .	Number	 00000007h   
+@code  . . . . . . . . . . . . .	Text   	 _TEXT
+@data  . . . . . . . . . . . . .	Text   	 FLAT
+@fardata?  . . . . . . . . . . .	Text   	 FLAT
+@fardata . . . . . . . . . . . .	Text   	 FLAT
+@stack . . . . . . . . . . . . .	Text   	 FLAT
+ALT_MASK . . . . . . . . . . . .	Number	 00000003h   
+CAPSLOCK_ON  . . . . . . . . . .	Number	 00000080h   
+CREATE_ALWAYS  . . . . . . . . .	Number	 00000002h   
+CREATE_NEW . . . . . . . . . . .	Number	 00000001h   
+CTRL_MASK  . . . . . . . . . . .	Number	 0000000Ch   
+CreateFile . . . . . . . . . . .	Text   	 CreateFileA
+DO_NOT_SHARE . . . . . . . . . .	Number	 00000000h   
+ENABLE_ECHO_INPUT  . . . . . . .	Number	 00000004h   
+ENABLE_LINE_INPUT  . . . . . . .	Number	 00000002h   
+ENABLE_MOUSE_INPUT . . . . . . .	Number	 00000010h   
+ENABLE_PROCESSED_INPUT . . . . .	Number	 00000001h   
+ENABLE_PROCESSED_OUTPUT  . . . .	Number	 00000001h   
+ENABLE_WINDOW_INPUT  . . . . . .	Number	 00000008h   
+ENABLE_WRAP_AT_EOL_OUTPUT  . . .	Number	 00000002h   
+ENHANCED_KEY . . . . . . . . . .	Number	 00000100h   
+FALSE  . . . . . . . . . . . . .	Number	 00000000h   
+FILE_APPEND_DATA . . . . . . . .	Number	 00000004h   
+FILE_ATTRIBUTE_ARCHIVE . . . . .	Number	 00000020h   
+FILE_ATTRIBUTE_COMPRESSED  . . .	Number	 00000800h   
+FILE_ATTRIBUTE_DEVICE  . . . . .	Number	 00000040h   
+FILE_ATTRIBUTE_DIRECTORY . . . .	Number	 00000010h   
+FILE_ATTRIBUTE_ENCRYPTED . . . .	Number	 00004000h   
+FILE_ATTRIBUTE_HIDDEN  . . . . .	Number	 00000002h   
+FILE_ATTRIBUTE_NORMAL  . . . . .	Number	 00000080h   
+FILE_ATTRIBUTE_NOT_CONTENT_INDEXED .	Number	 00002000h   
+FILE_ATTRIBUTE_OFFLINE . . . . .	Number	 00001000h   
+FILE_ATTRIBUTE_READONLY  . . . .	Number	 00000001h   
+FILE_ATTRIBUTE_REPARSE_POINT . .	Number	 00000400h   
+FILE_ATTRIBUTE_SPARSE_FILE . . .	Number	 00000200h   
+FILE_ATTRIBUTE_SYSTEM  . . . . .	Number	 00000004h   
+FILE_ATTRIBUTE_TEMPORARY . . . .	Number	 00000100h   
+FILE_BEGIN . . . . . . . . . . .	Number	 00000000h   
+FILE_CURRENT . . . . . . . . . .	Number	 00000001h   
+FILE_DELETE_CHILD  . . . . . . .	Number	 00000040h   
+FILE_END . . . . . . . . . . . .	Number	 00000002h   
+FILE_READ_DATA . . . . . . . . .	Number	 00000001h   
+FILE_SHARE_DELETE  . . . . . . .	Number	 00000004h   
+FILE_SHARE_READ  . . . . . . . .	Number	 00000001h   
+FILE_SHARE_WRITE . . . . . . . .	Number	 00000002h   
+FILE_WRITE_DATA  . . . . . . . .	Number	 00000002h   
+FOCUS_EVENT  . . . . . . . . . .	Number	 00000010h   
+FORMAT_MESSAGE_ALLOCATE_BUFFER .	Number	 00000100h   
+FORMAT_MESSAGE_FROM_SYSTEM . . .	Number	 00001000h   
+FormatMessage  . . . . . . . . .	Text   	 FormatMessageA
+GENERIC_ALL  . . . . . . . . . .	Number	 10000000h   
+GENERIC_EXECUTE  . . . . . . . .	Number	 20000000h   
+GENERIC_READ . . . . . . . . . .	Number	 -80000000h   
+GENERIC_WRITE  . . . . . . . . .	Number	 40000000h   
+GetCommandLine . . . . . . . . .	Text   	 GetCommandLineA
+HANDLE . . . . . . . . . . . . .	Text   	 DWORD
+HEAP_GENERATE_EXCEPTIONS . . . .	Number	 00000004h   
+HEAP_GROWABLE  . . . . . . . . .	Number	 00000002h   
+HEAP_NO_SERIALIZE  . . . . . . .	Number	 00000001h   
+HEAP_REALLOC_IN_PLACE_ONLY . . .	Number	 00000010h   
+HEAP_ZERO_MEMORY . . . . . . . .	Number	 00000008h   
+IDABORT  . . . . . . . . . . . .	Number	 00000003h   
+IDCANCEL . . . . . . . . . . . .	Number	 00000002h   
+IDCLOSE  . . . . . . . . . . . .	Number	 00000008h   
+IDCONTINUE . . . . . . . . . . .	Number	 0000000Bh   
+IDHELP . . . . . . . . . . . . .	Number	 00000009h   
+IDIGNORE . . . . . . . . . . . .	Number	 00000005h   
+IDNO . . . . . . . . . . . . . .	Number	 00000007h   
+IDOK . . . . . . . . . . . . . .	Number	 00000001h   
+IDRETRY  . . . . . . . . . . . .	Number	 00000004h   
+IDTIMEOUT  . . . . . . . . . . .	Number	 00007D00h   
+IDTRYAGAIN . . . . . . . . . . .	Number	 0000000Ah   
+IDYES  . . . . . . . . . . . . .	Number	 00000006h   
+INVALID_HANDLE_VALUE . . . . . .	Number	 -00000001h   
+KBDOWN_FLAG  . . . . . . . . . .	Number	 00000001h   
+KEY_EVENT  . . . . . . . . . . .	Number	 00000001h   
+KEY_MASKS  . . . . . . . . . . .	Number	 0000001Fh   
+LEFT_ALT_PRESSED . . . . . . . .	Number	 00000002h   
+LEFT_CTRL_PRESSED  . . . . . . .	Number	 00000008h   
+MB_ABORTRETRYIGNORE  . . . . . .	Number	 00000002h   
+MB_APPLMODAL . . . . . . . . . .	Number	 00000000h   
+MB_CANCELTRYCONTINUE . . . . . .	Number	 00000006h   
+MB_DEFBUTTON1  . . . . . . . . .	Number	 00000000h   
+MB_DEFBUTTON2  . . . . . . . . .	Number	 00000100h   
+MB_DEFBUTTON3  . . . . . . . . .	Number	 00000200h   
+MB_DEFBUTTON4  . . . . . . . . .	Number	 00000300h   
+MB_HELP  . . . . . . . . . . . .	Number	 00004000h   
+MB_ICONASTERISK  . . . . . . . .	Number	 00000040h   
+MB_ICONERROR . . . . . . . . . .	Number	 00000010h   
+MB_ICONEXCLAMATION . . . . . . .	Number	 00000030h   
+MB_ICONHAND  . . . . . . . . . .	Number	 00000010h   
+MB_ICONINFORMATION . . . . . . .	Number	 00000040h   
+MB_ICONQUESTION  . . . . . . . .	Number	 00000020h   
+MB_ICONSTOP  . . . . . . . . . .	Number	 00000010h   
+MB_ICONWARNING . . . . . . . . .	Number	 00000030h   
+MB_OKCANCEL  . . . . . . . . . .	Number	 00000001h   
+MB_OK  . . . . . . . . . . . . .	Number	 00000000h   
+MB_RETRYCANCEL . . . . . . . . .	Number	 00000005h   
+MB_SYSTEMMODAL . . . . . . . . .	Number	 00001000h   
+MB_TASKMODAL . . . . . . . . . .	Number	 00002000h   
+MB_USERICON  . . . . . . . . . .	Number	 00000080h   
+MB_YESNOCANCEL . . . . . . . . .	Number	 00000003h   
+MB_YESNO . . . . . . . . . . . .	Number	 00000004h   
+MENU_EVENT . . . . . . . . . . .	Number	 00000008h   
+MOUSE_EVENT  . . . . . . . . . .	Number	 00000002h   
+MessageBox . . . . . . . . . . .	Text   	 MessageBoxA
+NULL . . . . . . . . . . . . . .	Number	 00000000h   
+NUMLOCK_ON . . . . . . . . . . .	Number	 00000020h   
+OPEN_ALWAYS  . . . . . . . . . .	Number	 00000004h   
+OPEN_EXISTING  . . . . . . . . .	Number	 00000003h   
+PeekConsoleInput . . . . . . . .	Text   	 PeekConsoleInputA
+RIGHT_ALT_PRESSED  . . . . . . .	Number	 00000001h   
+RIGHT_CTRL_PRESSED . . . . . . .	Number	 00000004h   
+ReadConsoleInput . . . . . . . .	Text   	 ReadConsoleInputA
+ReadConsole  . . . . . . . . . .	Text   	 ReadConsoleA
+RowSize  . . . . . . . . . . . .	Number	 00000016h   
+SCROLLLOCK_ON  . . . . . . . . .	Number	 00000040h   
+SHIFT_MASK . . . . . . . . . . .	Number	 00000010h   
+SHIFT_PRESSED  . . . . . . . . .	Number	 00000010h   
+STD_ERROR_HANDLE . . . . . . . .	Number	 -0000000Ch   
+STD_INPUT_HANDLE . . . . . . . .	Number	 -0000000Ah   
+STD_OUTPUT_HANDLE  . . . . . . .	Number	 -0000000Bh   
+SetConsoleTitle  . . . . . . . .	Text   	 SetConsoleTitleA
+TAB  . . . . . . . . . . . . . .	Number	 00000009h   
+TRUE . . . . . . . . . . . . . .	Number	 00000001h   
+TRUNCATE_EXISTING  . . . . . . .	Number	 00000005h   
+VK_11  . . . . . . . . . . . . .	Number	 000000BDh   
+VK_12  . . . . . . . . . . . . .	Number	 000000BBh   
+VK_ADD . . . . . . . . . . . . .	Number	 0000006Bh   
+VK_BACK  . . . . . . . . . . . .	Number	 00000008h   
+VK_CANCEL  . . . . . . . . . . .	Number	 00000003h   
+VK_CAPITAL . . . . . . . . . . .	Number	 00000014h   
+VK_CLEAR . . . . . . . . . . . .	Number	 0000000Ch   
+VK_CONTROL . . . . . . . . . . .	Number	 00000011h   
+VK_DECIMAL . . . . . . . . . . .	Number	 0000006Eh   
+VK_DELETE  . . . . . . . . . . .	Number	 0000002Eh   
+VK_DIVIDE  . . . . . . . . . . .	Number	 0000006Fh   
+VK_DOWN  . . . . . . . . . . . .	Number	 00000028h   
+VK_END . . . . . . . . . . . . .	Number	 00000023h   
+VK_ESCAPE  . . . . . . . . . . .	Number	 0000001Bh   
+VK_EXECUTE . . . . . . . . . . .	Number	 0000002Bh   
+VK_F10 . . . . . . . . . . . . .	Number	 00000079h   
+VK_F11 . . . . . . . . . . . . .	Number	 0000007Ah   
+VK_F12 . . . . . . . . . . . . .	Number	 0000007Bh   
+VK_F13 . . . . . . . . . . . . .	Number	 0000007Ch   
+VK_F14 . . . . . . . . . . . . .	Number	 0000007Dh   
+VK_F15 . . . . . . . . . . . . .	Number	 0000007Eh   
+VK_F16 . . . . . . . . . . . . .	Number	 0000007Fh   
+VK_F17 . . . . . . . . . . . . .	Number	 00000080h   
+VK_F18 . . . . . . . . . . . . .	Number	 00000081h   
+VK_F19 . . . . . . . . . . . . .	Number	 00000082h   
+VK_F1  . . . . . . . . . . . . .	Number	 00000070h   
+VK_F20 . . . . . . . . . . . . .	Number	 00000083h   
+VK_F21 . . . . . . . . . . . . .	Number	 00000084h   
+VK_F22 . . . . . . . . . . . . .	Number	 00000085h   
+VK_F23 . . . . . . . . . . . . .	Number	 00000086h   
+VK_F24 . . . . . . . . . . . . .	Number	 00000087h   
+VK_F2  . . . . . . . . . . . . .	Number	 00000071h   
+VK_F3  . . . . . . . . . . . . .	Number	 00000072h   
+VK_F4  . . . . . . . . . . . . .	Number	 00000073h   
+VK_F5  . . . . . . . . . . . . .	Number	 00000074h   
+VK_F6  . . . . . . . . . . . . .	Number	 00000075h   
+VK_F7  . . . . . . . . . . . . .	Number	 00000076h   
+VK_F8  . . . . . . . . . . . . .	Number	 00000077h   
+VK_F9  . . . . . . . . . . . . .	Number	 00000078h   
+VK_HELP  . . . . . . . . . . . .	Number	 0000002Fh   
+VK_HOME  . . . . . . . . . . . .	Number	 00000024h   
+VK_INSERT  . . . . . . . . . . .	Number	 0000002Dh   
+VK_LBUTTON . . . . . . . . . . .	Number	 00000001h   
+VK_LCONTROL  . . . . . . . . . .	Number	 000000A2h   
+VK_LEFT  . . . . . . . . . . . .	Number	 00000025h   
+VK_LMENU . . . . . . . . . . . .	Number	 000000A4h   
+VK_LSHIFT  . . . . . . . . . . .	Number	 000000A0h   
+VK_MENU  . . . . . . . . . . . .	Number	 00000012h   
+VK_MULTIPLY  . . . . . . . . . .	Number	 0000006Ah   
+VK_NEXT  . . . . . . . . . . . .	Number	 00000022h   
+VK_NUMLOCK . . . . . . . . . . .	Number	 00000090h   
+VK_NUMPAD0 . . . . . . . . . . .	Number	 00000060h   
+VK_NUMPAD1 . . . . . . . . . . .	Number	 00000061h   
+VK_NUMPAD2 . . . . . . . . . . .	Number	 00000062h   
+VK_NUMPAD3 . . . . . . . . . . .	Number	 00000063h   
+VK_NUMPAD4 . . . . . . . . . . .	Number	 00000064h   
+VK_NUMPAD5 . . . . . . . . . . .	Number	 00000065h   
+VK_NUMPAD6 . . . . . . . . . . .	Number	 00000066h   
+VK_NUMPAD7 . . . . . . . . . . .	Number	 00000067h   
+VK_NUMPAD8 . . . . . . . . . . .	Number	 00000068h   
+VK_NUMPAD9 . . . . . . . . . . .	Number	 00000069h   
+VK_PAUSE . . . . . . . . . . . .	Number	 00000013h   
+VK_PRINT . . . . . . . . . . . .	Number	 0000002Ah   
+VK_PRIOR . . . . . . . . . . . .	Number	 00000021h   
+VK_RBUTTON . . . . . . . . . . .	Number	 00000002h   
+VK_RCONTROL  . . . . . . . . . .	Number	 000000A3h   
+VK_RETURN  . . . . . . . . . . .	Number	 0000000Dh   
+VK_RIGHT . . . . . . . . . . . .	Number	 00000027h   
+VK_RMENU . . . . . . . . . . . .	Number	 000000A5h   
+VK_RSHIFT  . . . . . . . . . . .	Number	 000000A1h   
+VK_SCROLL  . . . . . . . . . . .	Number	 00000091h   
+VK_SEPARATER . . . . . . . . . .	Number	 0000006Ch   
+VK_SHIFT . . . . . . . . . . . .	Number	 00000010h   
+VK_SNAPSHOT  . . . . . . . . . .	Number	 0000002Ch   
+VK_SPACE . . . . . . . . . . . .	Number	 00000020h   
+VK_SUBTRACT  . . . . . . . . . .	Number	 0000006Dh   
+VK_TAB . . . . . . . . . . . . .	Number	 00000009h   
+VK_UP  . . . . . . . . . . . . .	Number	 00000026h   
+WINDOW_BUFFER_SIZE_EVENT . . . .	Number	 00000004h   
+WriteConsoleOutputCharacter  . .	Text   	 WriteConsoleOutputCharacterA
+WriteConsole . . . . . . . . . .	Text   	 WriteConsoleA
+askChoice  . . . . . . . . . . .	Byte	 000001D5 _DATA	
+askName  . . . . . . . . . . . .	Byte	 000001E9 _DATA	
+black  . . . . . . . . . . . . .	Number	 00000000h   
+blue . . . . . . . . . . . . . .	Number	 00000001h   
+brown  . . . . . . . . . . . . .	Number	 00000006h   
+cyan . . . . . . . . . . . . . .	Number	 00000003h   
+endgameString1 . . . . . . . . .	Byte	 00000122 _DATA	
+endgameString2 . . . . . . . . .	Byte	 00000132 _DATA	
+exit . . . . . . . . . . . . . .	Text   	 INVOKE ExitProcess,0
+failScoreString  . . . . . . . .	Byte	 0000020A _DATA	
+fileHandle . . . . . . . . . . .	DWord	 00000446 _DATA	
+fileName . . . . . . . . . . . .	Byte	 0000043B _DATA	
+gamerunning  . . . . . . . . . .	Byte	 00000411 _DATA	
+gamestate  . . . . . . . . . . .	Byte	 00000410 _DATA	
+gray . . . . . . . . . . . . . .	Number	 00000008h   
+green  . . . . . . . . . . . . .	Number	 00000002h   
+helpString . . . . . . . . . . .	Byte	 0000005C _DATA	
+lastMove . . . . . . . . . . . .	Byte	 00000421 _DATA	
+lightBlue  . . . . . . . . . . .	Number	 00000009h   
+lightCyan  . . . . . . . . . . .	Number	 0000000Bh   
+lightGray  . . . . . . . . . . .	Number	 00000007h   
+lightGreen . . . . . . . . . . .	Number	 0000000Ah   
+lightMagenta . . . . . . . . . .	Number	 0000000Dh   
+lightRed . . . . . . . . . . . .	Number	 0000000Ch   
+loseString . . . . . . . . . . .	Byte	 00000169 _DATA	
+magenta  . . . . . . . . . . . .	Number	 00000005h   
+mazeTable  . . . . . . . . . . .	Byte	 00000241 _DATA	
+mazeplayer . . . . . . . . . . .	player	 00000413 _DATA	
+menuStrings  . . . . . . . . . .	Byte	 00000000 _DATA	
+nameBuffer . . . . . . . . . . .	Byte	 00000422 _DATA	
+nameSize . . . . . . . . . . . .	DWord	 00000437 _DATA	
+red  . . . . . . . . . . . . . .	Number	 00000004h   
+scoreSaved . . . . . . . . . . .	Byte	 000001FB _DATA	
+scoreString  . . . . . . . . . .	Byte	 000001C8 _DATA	
+timeString . . . . . . . . . . .	Byte	 000001CF _DATA	
+timeiter . . . . . . . . . . . .	DWord	 0000041D _DATA	
+timeleft . . . . . . . . . . . .	DWord	 00000419 _DATA	
+white  . . . . . . . . . . . . .	Number	 0000000Fh   
+winString  . . . . . . . . . . .	Byte	 00000182 _DATA	
+wincondition . . . . . . . . . .	Byte	 00000412 _DATA	
+wsprintf . . . . . . . . . . . .	Text   	 wsprintfA
+yellow . . . . . . . . . . . . .	Number	 0000000Eh   
+
+	   0 Warnings
+	   0 Errors
